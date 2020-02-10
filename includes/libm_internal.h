@@ -64,7 +64,8 @@ extern void	*__mstart;
 	__mblk_clear_size((mblk) + (size) + __mblkt_size); }
 
 # define __mblk_align_bits       ((mblk_t)(sizeof(void*) - 1UL))
-# define __mblk_align_size(size) ((mblk_t)(size + \
-				((~(size) & __mblk_align_bits) + 1UL)))
+# define __mblk_align_size(size) \
+	((mblk_t)((size % sizeof(void*)) \
+			? ((size) + ((~(size) & __mblk_align_bits) + 1UL)) : (size)))
 
 #endif /* LIBM_INTERNAL_H */
