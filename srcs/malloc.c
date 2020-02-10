@@ -34,11 +34,11 @@ static inline void	*find_best_free_block(const mblk_t __size) {
 	if (__bestptr) {
 		__mblk_set_size(__bestptr, __size);
 		__mblk_set_free(__bestptr, __size);
-		if (__bestsize > __size) {
+		if (__bestsize - __mblkt_bd_size > __size) {
 			__mblk_set_size(__bestptr + __mblkt_iter(__size),
-				__bestsize - __size);
+				__bestsize - __size - __mblkt_bd_size);
 			__mblk_unset_free(__bestptr + __mblkt_iter(__size),
-				__bestsize - __size);
+				__bestsize - __size - __mblkt_bd_size);
 		}
 	}
 	return __bestptr;
