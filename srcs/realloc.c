@@ -21,16 +21,17 @@ void	*realloc(void *ptr, size_t size)
 {
 	void			*__ptr = __ptr_get_mblk(ptr);
 	const mblk_t	__ptrsize = __mblk_get_size(__ptr);
+	const mblk_t	__newsize = __mblk_align_size(size);
 
 	if (!ptr) {
-		return (malloc(size));
-	} else if (!!ptr && !size) {
+		return (malloc(__newsize));
+	} else if (!!ptr && !__newsize) {
 		free(ptr);
 		return NULL;
-	} else if (__ptrsize >= size) {
+	} else if (__ptrsize >= __newsize) {
 		return ptr;
 	} else {
-		void	*out = calloc(1UL, size);
+		void	*out = calloc(1UL, __newsize);
 
 		if (out) {
 			_mmemcpy(out, ptr, __ptrsize);
