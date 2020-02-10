@@ -56,9 +56,7 @@ static inline void	*new_block(const mblk_t __size) {
 }
 
 void	*malloc(size_t size) {
-	const mblk_t	__size = (size % sizeof(void*))
-							? __mblk_align_size(size)
-							: size;
+	const mblk_t	__size = __mblk_align_size(size);
 	void			*out = NULL;
 
 	if (!__mstart && !__mend)

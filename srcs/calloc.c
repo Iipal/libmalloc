@@ -18,9 +18,7 @@ static inline void	*_mbzero(void *ptr, const mblk_t size)
 }
 
 inline void	*calloc(size_t nmemb, size_t size) {
-	const mblk_t	__size = ((size * nmemb) % sizeof(void*))
-						? __mblk_align_size(size * nmemb)
-						: (size * nmemb);
+	const mblk_t	__size = __mblk_align_size(nmemb * size);
 
 	return _mbzero(malloc(__size), __size);
 }
