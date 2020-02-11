@@ -11,6 +11,11 @@
 # include <assert.h>
 
 /*
+	Function using with atexit() for return the heap pointer back to the start.
+*/
+void	__free_all(void);
+
+/*
 Memory block metadata type - mblk_t:
 	contain 8-bytes aligned block size
 		and in the lowest bit - boolean for indicating are address is free.
