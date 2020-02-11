@@ -11,13 +11,20 @@ extern void	*realloc(void *ptr, size_t size);
 
 # ifdef __USE_MISC
 
-# define libm_mtrace_not_freed 1
-# define libm_mtrace_freed     2
-# define libm_mtrace_all       4
-# define libm_mtrace_none      0
+# define libm_mtrace_n_all      ((size_t)~0UL)
+
+# define libm_mtrace_f_not_freed 1
+# define libm_mtrace_f_freed     2
+# define libm_mtrace_f_all       4
+# define libm_mtrace_f_none      0
 
 /*
 	\param n_blocks is a limit to print\counter allocated blocks.
+		\param flags specification:
+			libm_mtrace_nall(size_t max value) -
+				put it in for count all available blocks.
+			*your_value* -
+
 	If \param flags are non-zero value - debug info will be printed.
 		\param flags specification:
 			libm_mtrace_not_freed(1) - print info only about not freed blocks.
