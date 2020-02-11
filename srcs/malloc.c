@@ -6,6 +6,8 @@
 #include "libm_internal.h"
 #undef LIBM_INTERNAL
 
+# include <stdlib.h>
+
 void	*__mend = NULL;
 void	*__mstart = NULL;
 
@@ -13,6 +15,7 @@ static inline void	malloc_init(void) {
 	__mstart = sbrk(0);
 	__mend = __mstart;
 	assert((void*)-1 != (__mstart = sbrk(0)));
+	atexit(__free_all);
 }
 
 static inline void	*find_best_free_block(const mblk_t __size) {
@@ -65,5 +68,6 @@ void	*malloc(size_t size) {
 		out = find_best_free_block(__size);
 	if (!out)
 		out = new_block(__size);
+	assert(out);
 	return __mblk_get_ptr(out);
 }
