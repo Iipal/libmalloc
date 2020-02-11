@@ -6,7 +6,10 @@
 #include "libm_internal.h"
 #undef LIBM_INTERNAL
 
-# include <stdlib.h>
+// shared from stdlib.h
+extern int atexit (void (*__func) (void))
+	__attribute__ ((__nothrow__ __LEAF))
+	__attribute__ ((__nonnull__ (1)));
 
 void	*__mend = NULL;
 void	*__mstart = NULL;
@@ -58,7 +61,7 @@ static inline void	*new_block(const mblk_t __size) {
 	return out;
 }
 
-void	*malloc(size_t size) {
+inline void	*malloc(size_t size) {
 	const mblk_t	__size = __mblk_align_size(size);
 	void			*out = NULL;
 

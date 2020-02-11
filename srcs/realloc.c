@@ -17,7 +17,7 @@ static inline void	*_mmemcpy(void *restrict dst,
 	return dst;
 }
 
-void	*realloc(void *ptr, size_t size)
+inline void	*realloc(void *ptr, size_t size)
 {
 	void			*__ptr = __ptr_get_mblk(ptr);
 	const mblk_t	__ptrsize = __mblk_get_size(__ptr);
