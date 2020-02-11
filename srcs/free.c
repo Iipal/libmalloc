@@ -13,11 +13,15 @@ void	__free_all(void) {
 
 static inline void	fragmentation_free_space_left(void *restrict ptr)
 {
-	mblk_t	__isize = __mblk_get_size(ptr - __mblkt_size);
-	void	*__iptr = ptr - __mblkt_iter(__isize);
-	mblk_t	__basesize = 0UL;
 	void	*__baseptr = ptr;
+	mblk_t	__basesize = 0UL;
+	void	*__iptr = NULL;
+	mblk_t	__isize = 0UL;
 
+	if (!__mblk_valid_start(ptr, __mblkt_size))
+		return ;
+	__isize = __mblk_get_size(ptr - __mblkt_size);
+	__iptr = ptr - __mblkt_iter(__isize);
 	if (__iptr < __mstart)
 		return ;
 	while (__iptr > __mstart && __mblk_is_free(__iptr)) {
@@ -33,10 +37,13 @@ static inline void	fragmentation_free_space_left(void *restrict ptr)
 
 static inline void	fragmentation_free_space_right(void *restrict ptr)
 {
-	void	*__iptr = ptr + __mblkt_iter(__mblk_get_size(ptr));
 	void	*__baseptr = ptr;
+	void	*__iptr = NULL;
 	mblk_t	__fragsize = 0UL;
 
+	if (!__mblk_valid_end(ptr, __mblkt_iter(__mblk_get_size(ptr))))
+		return ;
+	__iptr = ptr + __mblkt_iter(__mblk_get_size(ptr));
 	if (__iptr > __mend)
 		return ;
 	while (__iptr < __mend && __mblk_is_free(__iptr)) {

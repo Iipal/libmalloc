@@ -11,7 +11,7 @@ extern void	*realloc(void *ptr, size_t size);
 
 # ifdef __USE_MISC
 
-#  define libm_mtrace_n_all      ((size_t)~0UL)
+#  define libm_mtrace_n_all       ((size_t)~0UL)
 
 #  define libm_mtrace_f_not_freed 1
 #  define libm_mtrace_f_freed     2
