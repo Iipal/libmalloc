@@ -32,6 +32,9 @@ endif
 
 # Compiler settings.
 CC                    := clang
+ifeq (,$(shell whereis clang))
+CC                    := gcc
+endif
 CFLAGS                := -Wall -Wextra -Werror -Wunused -MMD -std=c11
 CFLAGS_DEBUG          := -g3
 CFLAGS_SHARED         := -shared
