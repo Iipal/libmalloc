@@ -37,6 +37,11 @@ extern void	*realloc(void *ptr, size_t size);
 */
 extern size_t	mtrace(size_t n_blocks, int flags);
 
+/*
+	\return value how much memory on heap are allocated.
+*/
+extern size_t	mhsize(void);
+
 #endif
 
 #endif
