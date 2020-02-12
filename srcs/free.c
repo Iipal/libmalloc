@@ -7,8 +7,10 @@
 #undef LIBM_INTERNAL
 
 void	__free_all(void) {
-	brk(__mstart);
+	const int	__brk_ret = brk(__mstart);
+
 	__mend = __mstart;
+	(void)__brk_ret; // gcc compatibility;
 }
 
 static inline void	fragmentation_free_space_left(void *restrict ptr)
@@ -58,6 +60,9 @@ static inline void	fragmentation_free_space_right(void *restrict ptr)
 }
 
 inline void	free(void *restrict ptr) {
+	if (!ptr)
+		return ;
+
 	void *restrict	__ptr = __ptr_get_mblk(ptr);
 
 	__mblk_unset_free(__ptr, __mblk_get_size(__ptr));
