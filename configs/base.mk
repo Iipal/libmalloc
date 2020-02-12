@@ -31,11 +31,16 @@ IFLAGS += $(addprefix -I,$(shell find $(foreach d,$(HEADER_DEPS),$(abspath $d)) 
 endif
 
 # Compiler settings.
-CC                    := clang
+CC     := clang
+CFLAGS := -Wall -Wextra -Werror -Wunused -MMD -std=c11
+
 ifeq (,$(shell whereis clang))
-CC                    := gcc
+CC     := gcc
 endif
-CFLAGS                := -Wall -Wextra -Werror -Wunused -MMD -std=c11
+ifeq (gcc,$(CC))
+CFLAGS += -Wno-unused-result
+endif
+
 CFLAGS_DEBUG          := -g3
 CFLAGS_SHARED         := -shared
 CFLAGS_PEDANTIC       := -Wpedantic

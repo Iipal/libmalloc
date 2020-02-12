@@ -17,7 +17,7 @@ void	*__mstart = NULL;
 static inline void	malloc_init(void) {
 	__mstart = sbrk(0);
 	__mend = __mstart;
-	assert((void*)-1 != (__mstart = sbrk(0)));
+	assert(((void*)-1) != (__mstart = sbrk(0)));
 	atexit(__free_all);
 }
 
@@ -54,7 +54,7 @@ static inline void	*new_block(const mblk_t __size) {
 	const mblk_t	__asize = __size + __mblkt_bd_size;
 	void			*out = NULL;
 
-	assert((void*)-1 != (out = sbrk(__asize)));
+	assert(((void*)-1) != (out = sbrk(__asize)));
 	__mend += __asize;
 	__mblk_set_size(out, __size);
 	__mblk_set_free(out, __size);

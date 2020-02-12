@@ -5,12 +5,11 @@
 #define LIBM_INTERNAL
 #include "libm_internal.h"
 #undef LIBM_INTERNAL
-
+#include <err.h>
 void	__free_all(void) {
-	const int	__brk_ret = brk(__mstart);
-
+	if (-1 == brk(__mstart))
+		err(1, "brk:");
 	__mend = __mstart;
-	(void)__brk_ret; // gcc compatibility;
 }
 
 static inline void	fragmentation_free_space_left(void *restrict ptr)

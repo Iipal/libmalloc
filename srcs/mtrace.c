@@ -23,24 +23,22 @@ size_t	mtrace(size_t n_blocks, int flags)
 	if (libm_mtrace_f_none == flags)
 		return __fast_mtrace(n_blocks);
 
-	ssize_t	__write_ret = 0;
 	switch (flags) {
 		case libm_mtrace_f_not_freed:
-			__write_ret = write(1, "Memory not freed:\n", 18);
+			write(1, "Memory not freed:\n", 18);
 			break ;
 		case libm_mtrace_f_freed:
-			__write_ret = write(1, "Memory freed:\n", 14);
+			write(1, "Memory freed:\n", 14);
 			break ;
 		case libm_mtrace_f_all:
-			__write_ret = write(1, "Memory all:\n", 12); break ;
+			write(1, "Memory all:\n", 12); break ;
 		default: break ;
 	}
-	__write_ret = write(1, "-----------------\n   N:   Address     Size\n", 43);
+	write(1, "-----------------\n   N:   Address     Size\n", 43);
 	if (!mhsize()) {
-		__write_ret = write(1, "\tno memory allocated yet.\n\n", 27);
+		write(1, "\tno memory allocated yet.\n\n", 27);
 		return 0;
 	}
-	(void)__write_ret; // gcc compatibility;
 
 	mblk_t	__isize = 0UL;
 	size_t	__m_blocks = 0;
