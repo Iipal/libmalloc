@@ -25,15 +25,18 @@ static inline void	fragmentation_free_space_left(void *restrict ptr)
 	__iptr = ptr - __mblkt_iter(__isize);
 	if (__iptr < __mstart)
 		return ;
-	while (__iptr > __mstart && __mblk_is_free(__iptr)) {
+	do {
+		if (!__mblk_is_free(__iptr))
+			break ;
 		__isize = __mblk_get_size(__iptr);
 		__basesize = __mblk_get_size(__baseptr);
 		__mblk_clear_value(__iptr);
 		__baseptr -= __mblkt_iter(__isize);
 		__mblk_set_size(__baseptr, __isize + __basesize + __mblkt_bd_size);
-		__iptr = __baseptr - __mblkt_iter(
-				__mblk_get_size(__baseptr - __mblkt_size));
-	}
+		__iptr = __baseptr;
+		if (__mblk_valid_start(__baseptr, __mblkt_size))
+			__iptr -= __mblkt_iter(__mblk_get_size(__baseptr - __mblkt_size));
+	} while (__iptr > __mstart);
 }
 
 static inline void	fragmentation_free_space_right(void *restrict ptr)
