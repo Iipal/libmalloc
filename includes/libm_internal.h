@@ -5,6 +5,7 @@
 #  error "include only libmalloc.h"
 # endif
 
+# include <sys/mman.h>
 # include <stdbool.h>
 # include <stdio.h>
 # include <unistd.h>
