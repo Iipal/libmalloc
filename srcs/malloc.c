@@ -51,26 +51,26 @@ static inline void	*find_best_free_block(const mblk_t __size) {
 }
 
 static inline void	*new_block(const mblk_t __size) {
-	const mblk_t	__asize = __size + __mblkt_bd_size;
+	const mblk_t	__alloc_size = __size + __mblkt_bd_size;
 	void			*out = NULL;
 
-	assert(((void*)-1) != (out = sbrk(__asize)));
-	__mend += __asize;
+	assert(((void*)-1) != (out = sbrk(__alloc_size)));
+	__mend += __alloc_size;
 	__mblk_set_size(out, __size);
 	__mblk_set_free(out, __size);
 	return out;
 }
 
 inline void	*malloc(size_t size) {
-	const mblk_t	__size = __mblk_align_size(size);
+	const mblk_t	__align_size = __mblk_align_size(size);
 	void			*out = NULL;
 
 	if (!__mstart && !__mend)
 		malloc_init();
 	if (__mstart != __mend)
-		out = find_best_free_block(__size);
+		out = find_best_free_block(__align_size);
 	if (!out)
-		out = new_block(__size);
+		out = new_block(__align_size);
 	assert(out);
 	return __mblk_get_ptr(out);
 }
