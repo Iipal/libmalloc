@@ -5,7 +5,9 @@
 #define LIBM_INTERNAL
 #include "libm_internal.h"
 #undef LIBM_INTERNAL
+
 #include <err.h>
+
 void	__free_all(void) {
 	if (-1 == brk(__mstart))
 		err(1, "brk:");

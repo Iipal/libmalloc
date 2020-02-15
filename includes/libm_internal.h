@@ -10,9 +10,7 @@
 # include <unistd.h>
 # include <assert.h>
 
-/*
-	Function using with atexit() for return the heap pointer back to the start.
-*/
+// Function using with atexit() for return the heap pointer back to the start.
 void	__free_all(void);
 
 /*
@@ -50,27 +48,28 @@ extern void	*__mstart;
 # define __mblk_is_free(_mblk) !(__mblk_get_value(_mblk) & __mblk_mask_free)
 # define __mblk_get_size(_mblk) (__mblk_get_value(_mblk) & __mblk_mask_size)
 
-# define __mblk_set_free(_mblk, _size) { \
+# define __mblk_set_free(_mblk, _size) do { \
 	__mblk_clear_free(_mblk); \
 	__mblk_get_value(_mblk) |= __mblk_mask_free; \
 	__mblk_clear_free((_mblk) + (_size) + __mblkt_size); \
-	__mblk_get_value((_mblk) + (_size) + __mblkt_size) |= __mblk_mask_free; }
-# define __mblk_set_size(_mblk, _size) { \
+	__mblk_get_value((_mblk) + (_size) + __mblkt_size) |= __mblk_mask_free; \
+	} while (0)
+# define __mblk_set_size(_mblk, _size) do { \
 	__mblk_clear_size(_mblk); \
 	__mblk_get_value(_mblk) |= _size; \
 	__mblk_clear_size((_mblk) + (_size) + __mblkt_size); \
-	__mblk_get_value((_mblk) + (_size) + __mblkt_size) |= _size; }
+	__mblk_get_value((_mblk) + (_size) + __mblkt_size) |= _size; } while (0)
 
-# define __mblk_unset_free(_mblk, _size) { \
+# define __mblk_unset_free(_mblk, _size) do { \
 	__mblk_clear_free(_mblk); \
-	__mblk_clear_free((_mblk) + (_size) + __mblkt_size); }
-# define __mblk_unset_size(_mblk, _size) { \
+	__mblk_clear_free((_mblk) + (_size) + __mblkt_size); } while (0)
+# define __mblk_unset_size(_mblk, _size) do { \
 	__mblk_clear_size(_mblk); \
-	__mblk_clear_size((_mblk) + (_size) + __mblkt_size); }
+	__mblk_clear_size((_mblk) + (_size) + __mblkt_size); } while (0)
 
 # define __mblk_align_bits       ((mblk_t)(sizeof(void*) - 1UL))
 # define __mblk_align_size(_size) \
-	((mblk_t)((_size % sizeof(void*)) \
+	((mblk_t)(((_size) % sizeof(void*)) \
 		? ((_size) + ((~(_size) & __mblk_align_bits) + 1UL)) : (_size)))
 
 # define __mblk_valid_start(_mblk, _offset) ((_mblk) - (_offset) >= __mstart)
