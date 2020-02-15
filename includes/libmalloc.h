@@ -13,23 +13,26 @@ extern void	*realloc(void *ptr, size_t size);
 
 #  define libm_mtrace_n_all       ((size_t)~0UL)
 
-#  define libm_mtrace_f_not_freed 1
-#  define libm_mtrace_f_freed     2
-#  define libm_mtrace_f_all       4
-#  define libm_mtrace_f_none      0
+#  define libm_mtrace_f_not_freed (1 << 0)
+#  define libm_mtrace_f_freed     (1 << 1)
+#  define libm_mtrace_f_all       (1 << 2)
+#  define libm_mtrace_f_total     (1 << 3)
+#  define libm_mtrace_f_none      (1 << 4)
 
 /*
 	\param n_blocks is a limit to print\counter allocated blocks.
 		\param flags specification:
-			libm_mtrace_nall(size_t max value) -
+			libm_mtrace_n_all(size_t max value) -
 				put it in to count all available blocks.
 
 	If \param flags are non-zero value - debug info will be printed.
 		\param flags specification:
-			libm_mtrace_not_freed(1) - print info only about not freed blocks.
-			libm_mtrace_freed(2)     - print info only about freed blocks.
-			libm_mtrace_all(4)       - print both of the above info.
-			libm_mtrace_none(0)      - doesn't print anything.
+			libm_mtrace_f_not_freed - print info only about not freed blocks.
+			libm_mtrace_f_freed     - print info only about freed blocks.
+			libm_mtrace_f_all       - print both of the above info,
+				and block status: 'f' - freed and '-' - not freed.
+			libm_mtrace_f_total     - print total allocated size.
+			libm_mtrace_f_none      - doesn't print anything.
 				Just will count allocated blocks.
 
 	\return value is a counter of allocated blocks
