@@ -15,9 +15,8 @@ void	*__mend = NULL;
 void	*__mstart = NULL;
 
 static inline void	malloc_init(void) {
-	__mstart = sbrk(0);
-	__mend = __mstart;
 	assert(((void*)-1) != (__mstart = sbrk(0)));
+	__mend = __mstart;
 	atexit(__free_all);
 }
 
