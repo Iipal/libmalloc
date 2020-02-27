@@ -17,9 +17,10 @@ void	__free_all(void) {
 static inline void	fragmentation_free_space_left(void *restrict ptr)
 {
 	void	*__baseptr = ptr;
-	mblk_t	__basesize = 0UL;
 	void	*__iptr = NULL;
-	mblk_t	__isize = 0UL;
+	mblk_value_t	__basesize = 0UL;
+	mblk_value_t	__isize = 0UL;
+	mblk_value_t	__fragsize = 0UL;
 
 	if (!__mblk_valid_start(ptr, __mblkt_size))
 		return ;
@@ -28,13 +29,15 @@ static inline void	fragmentation_free_space_left(void *restrict ptr)
 	if (__iptr < __mstart)
 		return ;
 	do {
-		if (!__mblk_is_free(__iptr))
+		if (!__mblk_get_free(__iptr))
 			break ;
 		__isize = __mblk_get_size(__iptr);
 		__basesize = __mblk_get_size(__baseptr);
-		__mblk_clear_value(__iptr);
+		__fragsize = __isize + __basesize + __mblkt_bd_size;
+		__mblk_clear(__iptr);
 		__baseptr -= __mblkt_iter(__isize);
-		__mblk_set_size(__baseptr, __isize + __basesize + __mblkt_bd_size);
+		__mblk_set_free(__baseptr, __fragsize, 1);
+		__mblk_set_size(__baseptr, __fragsize, __fragsize);
 		__iptr = __baseptr;
 		if (__mblk_valid_start(__baseptr, __mblkt_size))
 			__iptr -= __mblkt_iter(__mblk_get_size(__baseptr - __mblkt_size));
@@ -45,19 +48,20 @@ static inline void	fragmentation_free_space_right(void *restrict ptr)
 {
 	void	*__baseptr = ptr;
 	void	*__iptr = NULL;
-	mblk_t	__fragsize = 0UL;
+	mblk_value_t	__fragsize = 0UL;
 
 	if (!__mblk_valid_end(ptr, __mblkt_iter(__mblk_get_size(ptr))))
 		return ;
 	__iptr = ptr + __mblkt_iter(__mblk_get_size(ptr));
 	if (__iptr > __mend)
 		return ;
-	while (__iptr < __mend && __mblk_is_free(__iptr)) {
+	while (__iptr < __mend && __mblk_get_free(__iptr)) {
 		__fragsize = __mblk_get_size(__iptr)
 				+ __mblk_get_size(__baseptr)
 				+ __mblkt_bd_size;
-		__mblk_clear_value(__iptr);
-		__mblk_set_size(__baseptr, __fragsize);
+		__mblk_clear(__iptr);
+		__mblk_set_free(__baseptr, __fragsize, 1);
+		__mblk_set_size(__baseptr, __fragsize, __fragsize);
 		__baseptr += __mblkt_iter(__fragsize);
 		__iptr = __baseptr;
 	}
@@ -67,9 +71,9 @@ inline void	free(void *restrict ptr) {
 	if (!ptr)
 		return ;
 
-	void *restrict	__ptr = __ptr_get_mblk(ptr);
+	void	*__ptr = ptr - __mblkt_size;
 
-	__mblk_unset_free(__ptr, __mblk_get_size(__ptr));
+	__mblk_set_free(__ptr, __mblk_get_size(__ptr), 1);
 	fragmentation_free_space_left(__ptr);
 	fragmentation_free_space_right(__ptr);
 }

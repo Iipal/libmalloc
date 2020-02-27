@@ -10,7 +10,7 @@ static inline void	*_mmemcpy(void *restrict dst,
 						size_t n) {
 	unsigned char	*__dptr = (unsigned char*)dst;
 	const unsigned char	*__sptr = (unsigned char*)src;
-	mblk_t			__isize = n;
+	mblk_value_t	__isize = n;
 
 	while (__isize--)
 		__dptr[__isize] = __sptr[__isize];
@@ -19,9 +19,9 @@ static inline void	*_mmemcpy(void *restrict dst,
 
 inline void	*realloc(void *ptr, size_t size)
 {
-	void			*__ptr = __ptr_get_mblk(ptr);
-	const mblk_t	__ptrsize = __mblk_get_size(__ptr);
-	const mblk_t	__newsize = __mblk_align_size(size);
+	void	*__ptr = ptr - __mblkt_size;
+	const mblk_value_t	__ptrsize = __mblk_get_size(__ptr);
+	const mblk_value_t	__newsize = __mblk_align_size(size);
 
 	if (!ptr) {
 		return (malloc(__newsize));
