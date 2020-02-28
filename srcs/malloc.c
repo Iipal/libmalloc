@@ -36,16 +36,21 @@ static inline void	*find_best_free_block(const mblk_value_t __require_size) {
 		}
 		__iptr += __mblkt_iter(__isize);
 	}
-	if (__bestptr) {
-		__mblk_set_size(__bestptr, __require_size, __require_size);
-		__mblk_set_free(__bestptr, __require_size, 0);
-		if (__bestsize - __mblkt_bd_size > __require_size) {
+	if (!__bestptr)
+		return NULL;
+	__mblk_set_size(__bestptr, __require_size, __require_size);
+	__mblk_set_free(__bestptr, __require_size, 0);
+	if (__bestsize > __require_size) {
+		if ((__bestsize - __mblkt_bd_size) > __require_size) {
 			const mblk_value_t	__fragmentation_size
 				= __bestsize - __require_size - __mblkt_bd_size;
 			__mblk_set_size(__bestptr + __mblkt_iter(__require_size),
 				__fragmentation_size, __fragmentation_size);
 			__mblk_set_free(__bestptr + __mblkt_iter(__require_size),
 				__fragmentation_size, 1);
+		} else {
+			__mblk_set_size(__bestptr, __bestsize, __bestsize);
+			__mblk_set_free(__bestptr, __bestsize, 0);
 		}
 	}
 	return __bestptr;
@@ -55,7 +60,7 @@ static inline void	*new_block(const mblk_value_t __size) {
 	const mblk_value_t	__alloc_size = __size + __mblkt_bd_size;
 	void	*out = sbrk(__alloc_size);
 
-	if ((void*)-1 == out) {
+	if (((void*)-1) == out) {
 		out = NULL;
 	} else {
 		__mend += __alloc_size;
@@ -75,5 +80,5 @@ inline void	*malloc(size_t size) {
 		out = find_best_free_block(__align_size);
 	if (!out)
 		out = new_block(__align_size);
-	return out + __mblkt_size;
+	return out ? (out + __mblkt_size) : out;
 }
