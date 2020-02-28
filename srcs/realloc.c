@@ -19,24 +19,27 @@ static inline void	*_mmemcpy(void *restrict dst,
 
 inline void	*realloc(void *ptr, size_t size)
 {
-	void	*__ptr = ptr - __mblkt_size;
-	const mblk_value_t	__ptrsize = __mblk_get_size(__ptr);
 	const mblk_value_t	__newsize = __mblk_align_size(size);
 
 	if (!ptr) {
-		return (malloc(__newsize));
-	} else if (!!ptr && !__newsize) {
+		return malloc(__newsize);
+	} else if (!!ptr && !size) {
 		free(ptr);
 		return NULL;
-	} else if (__ptrsize >= __newsize) {
+	}
+
+	void	*__ptr = ptr - __mblkt_size;
+	const mblk_value_t	__ptrsize = __mblk_get_size(__ptr);
+
+	if (__ptrsize >= __newsize) {
 		return ptr;
 	} else {
-		void	*out = calloc(1UL, __newsize);
+		void	*out = malloc(__newsize);
 
 		if (out) {
 			_mmemcpy(out, ptr, __ptrsize);
 			free(ptr);
 		}
-		return (out);
+		return out;
 	}
 }
