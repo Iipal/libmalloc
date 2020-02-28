@@ -55,9 +55,9 @@ static inline void	*new_block(const mblk_value_t __size) {
 	const mblk_value_t	__alloc_size = __size + __mblkt_bd_size;
 	void	*out = sbrk(__alloc_size);
 
-	if ((void*)-1 == out)
+	if ((void*)-1 == out) {
 		out = NULL;
-	if (out) {
+	} else {
 		__mend += __alloc_size;
 		__mblk_set_size(out, __size, __size);
 		__mblk_set_free(out, __size, 0);
@@ -75,5 +75,5 @@ inline void	*malloc(size_t size) {
 		out = find_best_free_block(__align_size);
 	if (!out)
 		out = new_block(__align_size);
-	return out;
+	return out + __mblkt_size;
 }

@@ -17,8 +17,7 @@ static inline size_t	__fast_mtrace(const size_t n_blocks) {
 	return __m_blocks;
 }
 
-size_t	mtrace(size_t n_blocks, int flags)
-{
+size_t	mtrace(size_t n_blocks, int flags) {
 	if (libm_mtrace_f_none & flags)
 		return __fast_mtrace(n_blocks);
 
