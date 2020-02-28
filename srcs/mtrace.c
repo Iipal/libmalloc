@@ -17,8 +17,7 @@ static inline size_t	__fast_mtrace(const size_t n_blocks) {
 	return __m_blocks;
 }
 
-size_t	mtrace(size_t n_blocks, int flags)
-{
+size_t	mtrace(size_t n_blocks, int flags) {
 	if (libm_mtrace_f_none & flags)
 		return __fast_mtrace(n_blocks);
 
@@ -40,15 +39,15 @@ size_t	mtrace(size_t n_blocks, int flags)
 	}
 
 	size_t	__m_blocks = 0;
-	mblk_t	__isize = 0UL;
-	mblk_t	__free_size = 0UL;
-	mblk_t	__not_free_size = 0UL;
+	mblk_value_t	__isize = 0UL;
+	mblk_value_t	__free_size = 0UL;
+	mblk_value_t	__not_free_size = 0UL;
 
 	for (void *__iptr = __mstart;
 		n_blocks > __m_blocks && __iptr < __mend;
 		__iptr += __mblkt_iter(__isize)) {
 
-		const bool __ifree = __mblk_is_free(__iptr);
+		const bool __ifree = __mblk_get_free(__iptr);
 		const char __iblk_status = (libm_mtrace_f_all & flags)
 								? (__ifree ? 'f' : '-') : ' ';
 
