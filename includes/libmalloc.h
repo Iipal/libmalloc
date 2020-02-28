@@ -56,10 +56,12 @@ extern void	*realloc(void *ptr, size_t size)
 	\return value is a counter of allocated blocks
 	 and not greater than \param n_blocks.
 */
-extern size_t	mtrace(size_t n_blocks, int flags);
+extern size_t	mtrace(size_t n_blocks, int flags)
+	__attribute__((nothrow));
 
 //	\return value how much memory on heap are allocated.
-extern size_t	mhsize(void);
+extern size_t	mhsize(void)
+	__attribute__((nothrow));
 
 # endif
 
