@@ -14,13 +14,13 @@ extern int atexit (void (*__func) (void))
 void	*__mend = NULL;
 void	*__mstart = NULL;
 
-static inline void	malloc_init(void) {
+inline void	malloc_init(void) {
 	assert(((void*)-1) != (__mstart = sbrk(0)));
 	__mend = __mstart;
 	atexit(__free_all);
 }
 
-static inline void	*find_best_free_block(const mblk_value_t __require_size) {
+inline void	*find_best_free_block(const mblk_value_t __require_size) {
 	void	*__iptr = __mstart;
 	void	*__bestptr = NULL;
 	mblk_value_t	__isize = 0UL;
@@ -56,7 +56,7 @@ static inline void	*find_best_free_block(const mblk_value_t __require_size) {
 	return __bestptr;
 }
 
-static inline void	*new_block(const mblk_value_t __size) {
+inline void	*new_block(const mblk_value_t __size) {
 	const mblk_value_t	__alloc_size = __size + __mblkt_bd_size;
 	void	*out = sbrk(__alloc_size);
 
@@ -69,16 +69,17 @@ static inline void	*new_block(const mblk_value_t __size) {
 	}
 	return out;
 }
+#include <err.h>
 
 inline void	*malloc(size_t size) {
-	const mblk_value_t	__align_size = __mblk_align_size(size);
-	void	*out = NULL;
+	const int	pgsize = getpagesize();
+	(void)pgsize;
+	void	*out = mmap(NULL, size,
+				PROT_READ | PROT_WRITE,
+				MAP_PRIVATE | MAP_ANONYMOUS,
+				-1, 0);
 
-	if (!__mstart && !__mend)
-		malloc_init();
-	if (__mstart != __mend)
-		out = find_best_free_block(__align_size);
-	if (!out)
-		out = new_block(__align_size);
-	return out ? (out + __mblkt_size) : out;
+	if (((void*)-1) == out)
+		out = NULL;
+	return out;
 }
