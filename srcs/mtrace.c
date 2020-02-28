@@ -9,75 +9,65 @@
 static inline size_t	__fast_mtrace(const size_t n_blocks) {
 	size_t	__m_blocks = 0UL;
 
-	if (mhsize())
+	if (mhsize()) {
 		for (void *__iptr = __mstart;
 			n_blocks > __m_blocks && __iptr < __mend;
 			__iptr += __mblkt_iter(__mblk_get_size(__iptr)), __m_blocks++)
 				;
+	}
 	return __m_blocks;
 }
 
 size_t	mtrace(size_t n_blocks, int flags) {
-	if (libm_mtrace_f_none & flags)
+	if (!flags || (MTRACE_FNONE & flags))
 		return __fast_mtrace(n_blocks);
-
-	switch (flags) {
-		case libm_mtrace_f_not_freed:
-			write(1, "Memory not freed:\n", 18);
-			break ;
-		case libm_mtrace_f_freed:
-			write(1, "Memory freed:\n", 14);
-			break ;
-		case libm_mtrace_f_all:
-			write(1, "Memory all:\n", 12); break ;
-		default: break ;
-	}
-	write(1, "-----------------\n   N:   Address     Size\n", 43);
-	if (!mhsize()) {
-		write(1, "\tno memory allocated yet.\n\n", 27);
-		return 0;
-	}
 
 	size_t	__m_blocks = 0;
 	mblk_value_t	__isize = 0UL;
-	mblk_value_t	__free_size = 0UL;
-	mblk_value_t	__not_free_size = 0UL;
+	mblk_value_t	__ifree = 0UL;
+	mblk_value_t	__freed_size = 0UL;
+	mblk_value_t	__not_freed_size = 0UL;
+	const bool	__is_only_total = (MTRACE_FTOTAL == flags);
 
+	if (!__is_only_total)
+		puts("-----------------\n   N:   Address     Size\n");
+	if (!mhsize()) {
+		puts("mtrace: no memory allocated yet.\n\n");
+		return 0;
+	}
 	for (void *__iptr = __mstart;
 		n_blocks > __m_blocks && __iptr < __mend;
-		__iptr += __mblkt_iter(__isize)) {
-
-		const bool __ifree = __mblk_get_free(__iptr);
-		const char __iblk_status = (libm_mtrace_f_all & flags)
-								? (__ifree ? 'f' : '-') : ' ';
+		__iptr += __mblkt_iter(__isize), __m_blocks++) {
 
 		__isize = __mblk_get_size(__iptr);
+		__ifree = __mblk_get_free(__iptr);
 
-		if ((libm_mtrace_f_not_freed & flags || libm_mtrace_f_all & flags)
-		&& !__ifree) {
-			printf("%4lu: %-12p%7lu%c\n", __m_blocks++ + 1UL,
-				__iptr + __mblkt_size, __isize, __iblk_status);
-			__not_free_size += __isize;
+		if (!__is_only_total) {
+			printf("%4lu: %-12p%7lu%c\n",
+				__m_blocks + 1UL,
+				__iptr + __mblkt_size,
+				__isize,
+				((MTRACE_FALL & flags) ? (__ifree ? 'f' : '-') : ' '));
 		}
-		else if ((libm_mtrace_f_freed & flags || libm_mtrace_f_all & flags)
-		&& __ifree) {
-			printf("%4lu: %-12p%7lu%c\n", __m_blocks++ + 1UL,
-				__iptr + __mblkt_size, __isize, __iblk_status);
-			__free_size += __isize;
+
+		if (__ifree) {
+			__freed_size += __isize;
+		} else {
+			__not_freed_size += __isize;
 		}
 	}
 
-	if (libm_mtrace_f_total & flags) {
-		printf("----------------\nTotal:\n"
+	if (MTRACE_FTOTAL & flags) {
+		printf("----------------\nTotal (in bytes):\n"
 			"   blocks: %lu\n", __m_blocks);
-		if (libm_mtrace_f_all & flags) {
-			printf("   to use: %lu\n", __free_size + __not_free_size);
+		if (MTRACE_FALL & flags) {
+			printf("   to use: %lu\n", __freed_size + __not_freed_size);
 			printf("allocated: %zu\n", mhsize());
 		}
-		if (libm_mtrace_f_not_freed & flags || libm_mtrace_f_all & flags)
-			printf("not freed: %lu-\n", __not_free_size);
-		if (libm_mtrace_f_freed & flags || libm_mtrace_f_all & flags)
-			printf("    freed: %luf\n", __free_size);
+		if ((MTRACE_FNOT_FREED & flags) || (MTRACE_FALL & flags))
+			printf("not freed: %lu-\n", __not_freed_size);
+		if ((MTRACE_FFREED & flags) || (MTRACE_FALL & flags))
+			printf("    freed: %luf\n", __freed_size);
 	}
 
 	printf("\n");
