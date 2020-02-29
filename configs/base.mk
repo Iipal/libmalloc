@@ -32,7 +32,7 @@ endif
 
 # Compiler settings.
 CC     := clang
-CFLAGS := -Wall -Wextra -Werror -Wunused -MMD -std=c11 -Wno-pointer-arith
+CFLAGS := -Wall -Wextra -Werror -Wunused -MMD -std=c11
 
 ifeq (,$(shell whereis clang))
 CC     := gcc
@@ -43,7 +43,7 @@ endif
 
 CFLAGS_DEBUG          := -g3
 CFLAGS_SHARED         := -shared
-CFLAGS_PEDANTIC       := -Wpedantic
+CFLAGS_PEDANTIC       := -Wpedantic -Wno-pointer-arith
 CFLAGS_SANITIZE       := $(CFLAGS_DEBUG) -fsanitize=address
 CFLAGS_OPTIMIZE       := -march=native -mtune=native -Ofast -pipe -flto -fpic
 CFLAGS_ASSEMBLY       := -march=native -mtune=native -Ofast -pipe -S -masm=intel
