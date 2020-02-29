@@ -6,6 +6,7 @@
 # endif
 
 # include <stdbool.h>
+# include <stdint.h>
 # include <stdio.h>
 # include <unistd.h>
 # include <assert.h>
@@ -23,22 +24,24 @@ Using implicit "list" model: Bidirectional Coalescing.
 # ifndef S_MEM_BLOCK
 #  define S_MEM_BLOCK
 
-typedef unsigned long mblk_value_t;
 typedef struct s_mem_block mblk_t;
 
 struct s_mem_block {
-	mblk_value_t	size:((sizeof(mblk_value_t) * __CHAR_BIT__) - 3);
-	mblk_value_t	free:3;
-};
+	size_t	size:((sizeof(size_t) * __CHAR_BIT__) - 3);
+	size_t	free:3;
+} __attribute__((aligned(8)));
 
 # endif /* S_MEM_BLOCK */
 
 extern void	*__mend;
 extern void	*__mstart;
 
-# define __mblkt_size        ((mblk_value_t)(sizeof(mblk_t)))
-# define __mblkt_bd_size     ((mblk_value_t)(sizeof(mblk_t) * 2UL))
-# define __mblkt_iter(_size) ((mblk_value_t)((_size) + __mblkt_bd_size))
+# define __mblkt_size        (sizeof(mblk_t))
+# define __mblkt_bd_size     (__mblkt_size * 2)
+# define __mblkt_iter(_size) ((_size) + __mblkt_bd_size)
+
+# define __mblk_free     (size_t)1
+# define __mblk_not_free (size_t)0
 
 # define __mblk_get_free(_ptr) (((mblk_t*)(_ptr))->free)
 # define __mblk_get_size(_ptr) (((mblk_t*)(_ptr))->size)
@@ -50,19 +53,22 @@ extern void	*__mstart;
 
 # define __mblk_set_free(_ptr, _offset, _free_value) do { \
 	__mblk_get_free(_ptr) = (_free_value); \
-	__mblk_get_free((_ptr) + (_offset) + __mblkt_size) = (_free_value); \
+	__mblk_get_free((ptrdiff_t)(_ptr) + (_offset) + __mblkt_size) \
+		= (_free_value); \
 } while (0)
 
 # define __mblk_set_size(_ptr, _offset, _size_value) do { \
 	__mblk_get_size(_ptr) = (_size_value); \
-	__mblk_get_size((_ptr) + (_offset) + __mblkt_size) = (_size_value); \
+	__mblk_get_size((ptrdiff_t)(_ptr) + (_offset) + __mblkt_size) \
+		= (_size_value); \
 } while (0)
 
-# define __mblk_align_size(_size) \
-	((mblk_value_t)(((_size) % sizeof(void*)) \
-		? ((_size) + ((~(_size) & 0x7) + 1UL)) : (_size)))
+# define __mblk_align_size(_size) ((size_t)(((_size) % sizeof(void*)) \
+					? ((_size) + ((~(_size) & 0x7) + 1UL)) : (_size)))
 
-# define __mblk_valid_start(_ptr, _offset) ((_ptr) - (_offset) >= __mstart)
-# define __mblk_valid_end(_ptr, _offset)   ((_ptr) + (_offset) <= __mend)
+# define __mblk_valid_start(_ptr, _offset) \
+	(((uintptr_t)(_ptr) - (_offset)) >= (uintptr_t)__mstart)
+# define __mblk_valid_end(_ptr, _offset) \
+	(((uintptr_t)(_ptr) + (_offset)) <= (uintptr_t)__mend)
 
 #endif /* LIBM_INTERNAL_H */

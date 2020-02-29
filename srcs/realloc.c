@@ -6,35 +6,22 @@
 
 // with optimization, this code will transform into libc-memcpy call.
 static inline void	*_mmemcpy(void *restrict dst,
-						const void *restrict src,
-						size_t n) {
-	unsigned char	*__dptr = (unsigned char*)dst;
-	const unsigned char	*__sptr = (unsigned char*)src;
-	mblk_value_t	__isize = n;
+						const void *restrict src, size_t n);
 
-	while (__isize--)
-		__dptr[__isize] = __sptr[__isize];
-	return dst;
-}
-
-inline void	*realloc(void *ptr, size_t size)
-{
-	const mblk_value_t	__newsize = __mblk_align_size(size);
-
+void	*realloc(void *ptr, size_t size) {
 	if (!ptr) {
-		return malloc(__newsize);
+		return malloc(size);
 	} else if (!!ptr && !size) {
 		free(ptr);
 		return NULL;
 	}
 
-	void	*__ptr = ptr - __mblkt_size;
-	const mblk_value_t	__ptrsize = __mblk_get_size(__ptr);
+	const size_t	__ptrsize = __mblk_get_size((ptrdiff_t)ptr - __mblkt_size);
 
-	if (__ptrsize >= __newsize) {
+	if (__ptrsize >= __mblk_align_size(size)) {
 		return ptr;
 	} else {
-		void	*out = malloc(__newsize);
+		void	*out = malloc(size);
 
 		if (out) {
 			_mmemcpy(out, ptr, __ptrsize);
@@ -42,4 +29,15 @@ inline void	*realloc(void *ptr, size_t size)
 		}
 		return out;
 	}
+}
+
+static inline void	*_mmemcpy(void *restrict dst,
+						const void *restrict src, size_t n) {
+	uint8_t	*__dptr = (uint8_t*)dst;
+	const uint8_t	*__sptr = (uint8_t*)src;
+	size_t	__isize = n;
+
+	while (__isize--)
+		__dptr[__isize] = __sptr[__isize];
+	return dst;
 }
