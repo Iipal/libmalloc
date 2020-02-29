@@ -1,4 +1,8 @@
 make_optional:
+ ifneq (,$(filter $(MAKECMDGOALS),pedantic pedantic_all))
+	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_PEDANTIC))
+	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_PEDANTIC)
+ endif
  ifneq (,$(filter $(MAKECMDGOALS),debug debug_all))
 	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_DEBUG))
 	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_DEBUG)

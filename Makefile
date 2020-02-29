@@ -13,7 +13,7 @@ $(NAME): $(OBJS) $(ASMS)
   ifeq (.a,$(suffix $(NAME)))
 	@$(AR) $(ARFLAGS) $(NAME) $(OBJS)
   else
-	@$(CC) $(CFLAGS_OPTIONAL) $(CFLAGS_SHARED) $(OBJS) -o $(NAME)
+	@$(CC) $(CFLAGS) $(CFLAGS_OPTIONAL) $(CFLAGS_SHARED) $(OBJS) -o $(NAME)
   endif
  endif
 	@$(MAKE) STATUS_END
