@@ -37,17 +37,19 @@ CFLAGS := -Wall -Wextra -Werror -Wunused -MMD -std=c11
 ifeq (,$(shell whereis clang))
 CC     := gcc
 endif
-ifeq (gcc,$(CC))
-CFLAGS += -Wno-unused-result
-endif
 
 CFLAGS_DEBUG          := -g3
 CFLAGS_SHARED         := -shared
-CFLAGS_PEDANTIC       := -Wpedantic -Wno-pointer-arith
+CFLAGS_PEDANTIC       := -Wpedantic
 CFLAGS_SANITIZE       := $(CFLAGS_DEBUG) -fsanitize=address
 CFLAGS_OPTIMIZE       := -march=native -mtune=native -Ofast -pipe -flto -fpic
 CFLAGS_ASSEMBLY       := -march=native -mtune=native -Ofast -pipe -S -masm=intel
 CFLAGS_DEBUG_ASSEMBLY := $(CFLAGS_DEBUG) -S -masm=intel
+
+ifeq (gcc,$(CC))
+CFLAGS          += -Wno-unused-result
+CFLAGS_PEDANTIC += -fmax-errors=15
+endif
 
 ifeq (.so,$(suffix $(NAME)))
 CFLAGS_DEBUG          += -fpic
