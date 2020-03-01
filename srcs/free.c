@@ -21,59 +21,55 @@ void	free(void *restrict ptr) {
 }
 
 static inline void	fragmentation_free_space_left(void *restrict src_ptr) {
+	if (!__mblk_valid_start(src_ptr, __mblkt_size)) {
+		return ;
+	}
+
 	ptrdiff_t	__baseptr = (ptrdiff_t)src_ptr;
-	ptrdiff_t	__iptr = 0;
-	size_t	__isize = 0;
+	ptrdiff_t	__iptr = __baseptr
+		- __mblk_iter(__mblk_get_size(__baseptr - __mblkt_size));
 
-	if (!__mblk_valid_start(__baseptr, __mblkt_size))
-		return ;
-	__isize = __mblk_get_size(__baseptr - __mblkt_size);
-	__iptr = __baseptr - __mblkt_iter(__isize);
-	if ((uintptr_t)__iptr < (uintptr_t)__mstart)
-		return ;
-	do {
-		if (!__mblk_get_free(__iptr))
+	while (((uintptr_t)__iptr >= (uintptr_t)__mstart)
+	&& __mblk_get_free(__iptr)) {
+		const size_t	__fragsize = __mblk_get_size(__iptr)
+								+ __mblk_get_size(__baseptr)
+								+ __mblkt_bd_size;
+		__mblk_clear(__baseptr);
+		__mblk_set_free(__iptr, __fragsize, __mblk_free);
+		__mblk_set_size(__iptr, __fragsize, __fragsize);
+		if (!__mblk_valid_start(__iptr, __mblkt_size))
 			break ;
-		__isize = __mblk_get_size(__iptr);
-		const size_t	__fragsize
-			= __isize + __mblk_get_size(__baseptr) + (size_t)__mblkt_bd_size;
-
-		__mblk_clear(__iptr);
-		__baseptr -= __mblkt_iter(__isize);
-		__mblk_set_free(__baseptr, __fragsize, __mblk_free);
-		__mblk_set_size(__baseptr, __fragsize, __fragsize);
-		__iptr = __baseptr;
-		if (__mblk_valid_start(__baseptr, __mblkt_size))
-			__iptr -= __mblkt_iter(__mblk_get_size(__baseptr - __mblkt_size));
-	} while ((uintptr_t)__iptr > (uintptr_t)__mstart);
+		__baseptr = __iptr;
+		__iptr -= __mblk_iter(__mblk_get_size(__iptr - __mblkt_size));
+	}
 }
 
 static inline void	fragmentation_free_space_right(void *restrict src_ptr) {
-	ptrdiff_t	__baseptr = (ptrdiff_t)src_ptr;
-	ptrdiff_t	__iptr = 0;
+	if (!__mblk_valid_end(src_ptr, __mblkt_size)) {
+		return ;
+	}
 
-	if (!__mblk_valid_end(__baseptr, __mblkt_iter(__mblk_get_size(__baseptr))))
-		return ;
-	__iptr = __baseptr + __mblkt_iter(__mblk_get_size(__baseptr));
-	if ((uintptr_t)__iptr > (uintptr_t)__mend)
-		return ;
-	while ((uintptr_t)__iptr < (uintptr_t)__mend && __mblk_get_free(__iptr)) {
+	ptrdiff_t	__baseptr = (ptrdiff_t)src_ptr;
+	ptrdiff_t	__iptr = __baseptr + __mblk_iter(__mblk_get_size(__baseptr));
+
+	while (((uintptr_t)__iptr < (uintptr_t)__mend) && __mblk_get_free(__iptr)) {
 		const size_t	__fragsize = __mblk_get_size(__iptr)
 								+ __mblk_get_size(__baseptr)
 								+ __mblkt_bd_size;
 		__mblk_clear(__iptr);
 		__mblk_set_free(__baseptr, __fragsize, __mblk_free);
 		__mblk_set_size(__baseptr, __fragsize, __fragsize);
-		__baseptr += __mblkt_iter(__fragsize);
+		__baseptr += __mblk_iter(__fragsize);
 		__iptr = __baseptr;
 	}
 }
 
 #include <err.h>
 
-// using via atexit()
+// using with atexit()
 void	__free_all(void) {
-	if (-1 == brk((void*)__mstart))
+	if (-1 == brk((void*)__mstart)) {
 		err(1, "brk:");
+	}
 	__mend = __mstart;
 }
