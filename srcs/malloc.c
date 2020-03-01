@@ -16,6 +16,23 @@ void	*__mstart = NULL;
 
 static inline void	*find_best_free_block(const size_t __require_size);
 static inline void	*new_block(const size_t __size);
+static inline bool	malloc_init(void);
+
+void	*malloc(size_t size) {
+	const size_t	__align_size = __mblk_align_size(size);
+	void	*out = NULL;
+
+	if ((!__mstart || !__mend) && !malloc_init()) {
+		return NULL;
+	}
+	if (!(out = find_best_free_block(__align_size))) {
+		if (!(out = new_block(__align_size))) {
+			return NULL;
+		}
+	}
+	return (void*)((uintptr_t)out + __mblkt_size);
+}
+
 static inline bool	malloc_init(void) {
 	if ((void*)-1 == (__mstart = sbrk(0))) {
 		__mstart = NULL;
@@ -24,19 +41,6 @@ static inline bool	malloc_init(void) {
 	__mend = __mstart;
 	atexit(__free_all);
 	return true;
-}
-
-void	*malloc(size_t size) {
-	const size_t	__align_size = __mblk_align_size(size);
-	void	*out = NULL;
-
-	if (!__mstart && !__mend && !malloc_init())
-		return NULL;
-	if (__mstart != __mend)
-		out = find_best_free_block(__align_size);
-	if (!out)
-		out = new_block(__align_size);
-	return out ? (void*)((uintptr_t)out + __mblkt_size) : out;
 }
 
 static inline void	*new_block(const size_t __size) {
@@ -53,16 +57,16 @@ static inline void	*new_block(const size_t __size) {
 	return out;
 }
 
-static inline void	frag_free_space(const void *restrict __bestptr,
+static inline void	frag_free_space(const ptrdiff_t __bestptr,
 									const size_t __bestsize,
 									const size_t __require_size) {
 	if ((__bestsize - __mblkt_bd_size) > __require_size) {
 		const size_t	__fragmentation_size
 			= __bestsize - __mblkt_bd_size - __require_size;
 
-		__mblk_set_size((uintptr_t)__bestptr + __mblkt_iter(__require_size),
+		__mblk_set_size((uintptr_t)__bestptr + __mblk_iter(__require_size),
 			__fragmentation_size, __fragmentation_size);
-		__mblk_set_free((uintptr_t)__bestptr + __mblkt_iter(__require_size),
+		__mblk_set_free((uintptr_t)__bestptr + __mblk_iter(__require_size),
 			__fragmentation_size, __mblk_free);
 	} else {
 		__mblk_set_size(__bestptr, __bestsize, __bestsize);
@@ -71,8 +75,8 @@ static inline void	frag_free_space(const void *restrict __bestptr,
 }
 
 static inline void	*find_best_free_block(const size_t __require_size) {
-	void	*__iptr = __mstart;
-	void	*__bestptr = 0;
+	ptrdiff_t	__iptr = (ptrdiff_t)__mstart;
+	ptrdiff_t	__bestptr = 0;
 	size_t	__isize = 0;
 	size_t	__bestsize = mhsize();
 
@@ -84,13 +88,14 @@ static inline void	*find_best_free_block(const size_t __require_size) {
 			__bestsize = __isize;
 			__bestptr = __iptr;
 		}
-		__iptr = (void*)((uintptr_t)__iptr + __mblkt_iter(__isize));
+		__iptr += __mblk_iter(__isize);
 	}
 	if (!!__bestptr) {
 		__mblk_set_size(__bestptr, __require_size, __require_size);
 		__mblk_set_free(__bestptr, __require_size, __mblk_not_free);
-		if (__bestsize > __require_size)
+		if (__bestsize > __require_size) {
 			frag_free_space(__bestptr, __bestsize, __require_size);
+		}
 	}
-	return __bestptr;
+	return (void*)__bestptr;
 }

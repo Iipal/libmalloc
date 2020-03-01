@@ -7,6 +7,8 @@
 #undef LIBM_INTERNAL
 
 inline size_t	mhsize(void) {
-	return ((!__mstart || !__mend)
-		? (size_t)0 : (size_t)((uintptr_t)__mend - (uintptr_t)__mstart));
+	if (!__mstart || !__mend) {
+		return (size_t)0;
+	}
+	return (size_t)((uintptr_t)__mend - (uintptr_t)__mstart);
 }
