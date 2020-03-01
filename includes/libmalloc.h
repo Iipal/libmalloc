@@ -17,34 +17,8 @@ extern void	*realloc(void *ptr, size_t size)
 
 #  define _mtrace_defined 1
 
-#  undef MTRACE_NALL
-
-#  undef MTRACE_FNOT_FREED
-#  undef MTRACE_FFREED
-#  undef MTRACE_FALL
-#  undef MTRACE_FTOTAL
-#  undef MTRACE_FNONE
-
-// put it at 'mtrace()' first argument to count all available blocks.
-#  define MTRACE_NALL       ~((size_t)0)
-
-// print info only about not freed blocks
-#  define MTRACE_FNOT_FREED (1 << 0)
-
-// print info only about freed blocks.
-#  define MTRACE_FFREED     (1 << 1)
-
-// print both info of the freed and not freed blocks.
-#  define MTRACE_FALL       (1 << 2)
-
-// print total allocated size.
-#  define MTRACE_FTOTAL     (1 << 3)
-
-// doesn't print anything. just will count allocated blocks.
-#  define MTRACE_FNONE      (1 << 4)
-
 /*
-	Simple malloc trace log.
+	Simple malloc information tracer.
 
 	\param n_blocks is a limit to print\counter allocated blocks.
 
@@ -53,13 +27,69 @@ extern void	*realloc(void *ptr, size_t size)
 		`mtrace(MTRACE_NALL, MTRACE_FTOTAL | MTRACE_FNOT_FREED);`
 	 If `MTRACE_f_none` is set at any way - all other bits will be ignored.
 
-	\return value is a counter of allocated blocks
+	\return a counter of allocated blocks
 	 and not greater than \param n_blocks.
 */
 extern size_t	mtrace(size_t n_blocks, int flags)
 	__attribute__((nothrow));
 
-//	\return value how much memory on heap are allocated.
+#  undef MTRACE_NALL
+
+#  undef MTRACE_FNONE
+#  undef MTRACE_FNOT_FREED
+#  undef MTRACE_FFREED
+#  undef MTRACE_FALL
+#  undef MTRACE_FTOTAL
+#  undef MTRACE_FQUITE
+
+/*
+	only(!) for \param n_blocks to count all allocated blocks.
+*/
+#  define MTRACE_NALL       ~((size_t)0)
+
+/*
+	doesn't print anything. just will count allocated blocks.
+*/
+#  define MTRACE_FNONE      (1 << 0)
+
+/*
+	print info only about not freed blocks. (marked as '-')
+*/
+#  define MTRACE_FNOT_FREED (1 << 1)
+
+/*
+	print info only about freed blocks. (marked as 'f')
+*/
+#  define MTRACE_FFREED     (1 << 2)
+
+// alias for `MTRACE_FFREED | MTRACE_FNOT_FREED`.
+#  define MTRACE_FALL       (MTRACE_FFREED | MTRACE_FNOT_FREED)
+
+/*
+	print additional("total") info about blocks.
+
+	behavior:
+	 only `MTRACE_FTOTAL` - will print only count of allocated blocks
+	 `MTRACE_FTOTAL | MTRACE_FFREED` - also print info about freed blocks.
+	 `MTRACE_FTOTAL | MTRACE_FNOT_FREED` - also print info about not freed blocks.
+	 `MTRACE_FTOTAL | MTRACE_FALL` - also print additional summary allocated memory blocks info.
+*/
+#  define MTRACE_FTOTAL     (1 << 3)
+
+/*
+	alias for `MTRACE_FTOTAL | MTRACE_FNONE`.
+
+	it will not print any information for each block as `MTRACE_FNONE`,
+	 but will print total as `MTRACE_FTOTAL`
+	 with any corresponding flag is set.
+*/
+#  define MTRACE_FQUITE     (MTRACE_FTOTAL | MTRACE_FNONE)
+
+#  define _mhsize_defined 1
+
+/*
+	\return size of summary allocated memory on heap.
+*/
 extern size_t	mhsize(void)
 	__attribute__((nothrow));
 
