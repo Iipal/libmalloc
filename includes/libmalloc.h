@@ -23,9 +23,9 @@ extern void	*realloc(void *ptr, size_t size)
 	\param n_blocks is a limit to print\counter allocated blocks.
 
 	\param flags is a bits mask,
-	 so the next code is allowed and will work correct:
-		`mtrace(MTRACE_NALL, MTRACE_FTOTAL | MTRACE_FNOT_FREED);`
-	 If `MTRACE_f_none` is set at any way - all other bits will be ignored.
+	 so next code is allowed and will work correct:
+		`mtrace(MTRACE_NALL, MTRACE_FQUITE | MTRACE_FALL);`
+	 If `MTRACE_F_NONE` is set in any way - all other flags will be ignored.
 
 	\return a counter of allocated blocks
 	 and not greater than \param n_blocks.
