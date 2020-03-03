@@ -5,17 +5,18 @@
 # include <features.h>
 
 extern void	*malloc(size_t size)
-	__attribute__((nothrow));
-extern void	free(void *restrict ptr)
-	__attribute__((nothrow));
+	__attribute_alloc_size__((1));
+extern void	free(void *ptr);
 extern void	*calloc(size_t nmemb, size_t size)
-	__attribute__((nothrow));
+	__attribute_alloc_size__((1, 2));
 extern void	*realloc(void *ptr, size_t size)
-	__attribute__((nothrow));
+	__attribute_alloc_size__((2));
 
 # ifdef __USE_MISC
 
 #  define _mtrace_defined 1
+#  define _mhsize_defined 1
+#  define _mptrsize_defined 1
 
 /*
 	Simple malloc information tracer.
@@ -85,12 +86,16 @@ extern size_t	mtrace(size_t n_blocks, int flags)
 */
 #  define MTRACE_FQUITE     (MTRACE_FTOTAL | MTRACE_FNONE)
 
-#  define _mhsize_defined 1
-
 /*
 	\return size of summary allocated memory on heap.
 */
 extern size_t	mhsize(void)
+	__attribute__((nothrow));
+
+/*
+	\return a size of allocated memory able to use for \param ptr.
+*/
+extern size_t	mptrsize(void *ptr)
 	__attribute__((nothrow));
 
 # endif

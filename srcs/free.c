@@ -6,23 +6,25 @@
 #include "libm_internal.h"
 #undef LIBM_INTERNAL
 
-static inline void	fragmentation_free_space_left(void *restrict src_ptr);
-static inline void	fragmentation_free_space_right(void *restrict src_ptr);
+static inline void	*_fragmentation_left(void *restrict src_ptr);
+static inline void	_fragmentation_right(void *restrict src_ptr);
 
-void	free(void *restrict ptr) {
-	if (!ptr)
+void	free(void *ptr) {
+	if (!ptr) {
 		return ;
+	}
 
-	void *restrict	__ptr = (void *restrict)((ptrdiff_t)ptr - __mblkt_size);
+	void	*__ptr = (void*)((ptrdiff_t)ptr - __mblkt_size);
 
 	__mblk_set_free(__ptr, __mblk_get_size(__ptr), __mblk_free);
-	fragmentation_free_space_left(__ptr);
-	fragmentation_free_space_right(__ptr);
+	if (!!(__ptr = _fragmentation_left(__ptr))) {
+		_fragmentation_right(__ptr);
+	}
 }
 
-static inline void	fragmentation_free_space_left(void *restrict src_ptr) {
+static inline void	*_fragmentation_left(void *restrict src_ptr) {
 	if (!__mblk_valid_start(src_ptr, __mblkt_size)) {
-		return ;
+		return NULL;
 	}
 
 	ptrdiff_t	__baseptr = (ptrdiff_t)src_ptr;
@@ -37,14 +39,16 @@ static inline void	fragmentation_free_space_left(void *restrict src_ptr) {
 		__mblk_clear(__baseptr);
 		__mblk_set_free(__iptr, __fragsize, __mblk_free);
 		__mblk_set_size(__iptr, __fragsize, __fragsize);
-		if (!__mblk_valid_start(__iptr, __mblkt_size))
+		if (!__mblk_valid_start(__iptr, __mblkt_size)
+		|| !__mblk_valid_start(__iptr, __mblk_get_size(__iptr - __mblkt_size)))
 			break ;
 		__baseptr = __iptr;
 		__iptr -= __mblk_iter(__mblk_get_size(__iptr - __mblkt_size));
 	}
+	return (void*)__baseptr;
 }
 
-static inline void	fragmentation_free_space_right(void *restrict src_ptr) {
+static inline void	_fragmentation_right(void *restrict src_ptr) {
 	if (!__mblk_valid_end(src_ptr, __mblkt_size)) {
 		return ;
 	}
@@ -63,8 +67,6 @@ static inline void	fragmentation_free_space_right(void *restrict src_ptr) {
 		__iptr = __baseptr;
 	}
 }
-
-#include <err.h>
 
 // using with atexit()
 void	__free_all(void) {

@@ -5,27 +5,25 @@
 #  error "include only libmalloc.h"
 # endif
 
+# include <err.h>     // errx
+# include <unistd.h>  // brk & sbrk
+# include <string.h>  // memcpy
+# include <strings.h> // bzero
 # include <stdbool.h>
 # include <stdint.h>
-# include <stdio.h>
-# include <string.h>
-# include <strings.h>
-# include <unistd.h>
-# include <assert.h>
 
 // Function using with atexit() for return the heap pointer back to the start.
 void	__free_all(void);
 
-/*
-Memory block metadata type - mblk_t:
-	size - exactly the size of a memory block
-	free - 1 if block is a free to use, 0 if not
-
-Using implicit "list" model: Bidirectional Coalescing.
-*/
 # ifndef S_MEM_BLOCK
 #  define S_MEM_BLOCK
+/*
+	Memory block metadata type - mblk_t:
+		size - exactly the size of a memory block
+		free - 1 if block is a free to use, 0 if not
 
+	Using implicit free list model: Bidirectional Coalescing.
+*/
 typedef struct s_mem_block mblk_t;
 
 struct s_mem_block {

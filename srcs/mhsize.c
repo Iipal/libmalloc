@@ -7,8 +7,10 @@
 #undef LIBM_INTERNAL
 
 inline size_t	mhsize(void) {
-	if (!__mstart || !__mend) {
-		return (size_t)0;
+	size_t	malloc_heap_size = 0;
+
+	if (__mstart || __mend) {
+		malloc_heap_size = (size_t)((uintptr_t)__mend - (uintptr_t)__mstart);
 	}
-	return (size_t)((uintptr_t)__mend - (uintptr_t)__mstart);
+	return malloc_heap_size;
 }

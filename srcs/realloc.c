@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include "libmalloc.h"
 
 #define LIBM_INTERNAL
@@ -19,7 +21,7 @@ void	*realloc(void *ptr, size_t size) {
 	} else {
 		void	*out = malloc(size);
 
-		if (out) {
+		if (!!out) {
 			memcpy(out, ptr, __ptrsize);
 			free(ptr);
 		}
