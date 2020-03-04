@@ -36,13 +36,14 @@ size_t	mtrace(size_t n_blocks, int flags) {
 		__prepare_fmt_str(n_blocks, __fmt_str);
 	}
 
-	ptrdiff_t	__iptr = (ptrdiff_t)__mstart;
 	size_t	__isize = 0;
 	size_t	__ifree = 0;
 	size_t	__iblocks = 0;
 	size_t	__freed_size = 0;
 	size_t	__not_freed_size = 0;
 
+	pthread_mutex_lock(&__mmutex);
+	ptrdiff_t	__iptr = (ptrdiff_t)__mstart;
 	while (n_blocks > __iblocks && (uintptr_t)__iptr < (uintptr_t)__mend) {
 		__isize = __mblk_get_size(__iptr);
 		__ifree = __mblk_get_free(__iptr);
@@ -67,6 +68,7 @@ size_t	mtrace(size_t n_blocks, int flags) {
 		__iptr += __mblk_iter(__isize);
 		++__iblocks;
 	}
+	pthread_mutex_unlock(&__mmutex);
 
 	if (__is_bit(flags, MTRACE_FTOTAL)) {
 		printf("-------------------------\nTotal:\n"
@@ -90,6 +92,7 @@ size_t	mtrace(size_t n_blocks, int flags) {
 static inline size_t	__fast_mtrace(const size_t n_blocks) {
 	size_t	__iblocks = 0UL;
 
+	pthread_mutex_lock(&__mmutex);
 	if (mhsize()) {
 		ptrdiff_t	__iptr = (ptrdiff_t)__mstart;
 
@@ -99,6 +102,7 @@ static inline size_t	__fast_mtrace(const size_t n_blocks) {
 			++__iblocks;
 		}
 	}
+	pthread_mutex_unlock(&__mmutex);
 	return __iblocks;
 }
 

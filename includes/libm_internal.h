@@ -10,6 +10,7 @@
 # include <string.h>  // memcpy
 # include <strings.h> // bzero
 # include <stdbool.h>
+# include <pthread.h>
 # include <stdint.h>
 
 // Function using with atexit() for return the heap pointer back to the start.
@@ -32,6 +33,9 @@ struct s_mem_block {
 } __attribute__((aligned(8)));
 
 # endif /* S_MEM_BLOCK */
+
+
+extern pthread_mutex_t	__mmutex;
 
 extern void	*__mend;
 extern void	*__mstart;

@@ -7,8 +7,12 @@
 #undef LIBM_INTERNAL
 
 inline size_t	mptrsize(void *ptr) {
-	if (!ptr) {
-		return 0;
+	size_t	__mptrsize_out = 0;
+
+	if (!!ptr) {
+		pthread_mutex_trylock(&__mmutex);
+		__mptrsize_out = __mblk_get_size((ptrdiff_t)ptr - __mblkt_size);
+		pthread_mutex_unlock(&__mmutex);
 	}
-	return __mblk_get_size((ptrdiff_t)ptr - __mblkt_size);
+	return __mptrsize_out;
 }

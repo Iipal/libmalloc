@@ -6,6 +6,8 @@
 #include "libm_internal.h"
 #undef LIBM_INTERNAL
 
+pthread_mutex_t	__mmutex = PTHREAD_MUTEX_INITIALIZER;
+
 void	*__mend = NULL;
 void	*__mstart = NULL;
 
@@ -17,12 +19,14 @@ void	*malloc(size_t size) {
 	const size_t	__align_size = __mblk_align_size(size);
 	void	*out = NULL;
 
+	pthread_mutex_lock(&__mmutex);
 	if ((!__mstart || !__mend) && !_malloc_init()) {
 		return NULL;
 	}
 	if (!(out = _find_best_free_block(__align_size))) {
 		out = _new_block(__align_size);
 	}
+	pthread_mutex_unlock(&__mmutex);
 	if (!out) {
 		return NULL;
 	}

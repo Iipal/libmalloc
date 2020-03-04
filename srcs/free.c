@@ -16,10 +16,12 @@ void	free(void *ptr) {
 
 	void	*__ptr = (void*)((ptrdiff_t)ptr - __mblkt_size);
 
+	pthread_mutex_lock(&__mmutex);
 	__mblk_set_free(__ptr, __mblk_get_size(__ptr), __mblk_free);
 	if (!!(__ptr = _fragmentation_left(__ptr))) {
 		_fragmentation_right(__ptr);
 	}
+	pthread_mutex_unlock(&__mmutex);
 }
 
 static inline void	*_fragmentation_left(void *restrict src_ptr) {
