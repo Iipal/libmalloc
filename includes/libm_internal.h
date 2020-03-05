@@ -5,13 +5,13 @@
 #  error "include only libmalloc.h"
 # endif
 
-# include <err.h>     // errx
 # include <unistd.h>  // brk & sbrk
 # include <string.h>  // memcpy
 # include <strings.h> // bzero
 # include <stdbool.h>
 # include <pthread.h>
 # include <stdint.h>
+# include <stddef.h>
 
 // Function using with atexit() for return the heap pointer back to the start.
 void	__free_all(void);
@@ -43,10 +43,14 @@ extern void	*__mstart;
 # define __mblkt_size    (sizeof(mblk_t))
 # define __mblkt_bd_size (__mblkt_size * 2)
 
-# define __mblk_free     (size_t)1
-# define __mblk_not_free (size_t)0
+# define __mblkt_psize    ((ptrdiff_t)__mblkt_size)
+# define __mblkt_bd_psize ((ptrdiff_t)__mblkt_bd_size)
+
+# define __mblk_free     1
+# define __mblk_not_free 0
 
 # define __mblk_iter(_size) ((_size) + __mblkt_bd_size)
+# define __mblk_piter(_size) ((ptrdiff_t)__mblk_iter(_size))
 
 # define __mblk_get_free(_ptr) (((mblk_t*)(_ptr))->free)
 # define __mblk_get_size(_ptr) (((mblk_t*)(_ptr))->size)

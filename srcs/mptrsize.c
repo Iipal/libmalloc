@@ -11,7 +11,8 @@ inline size_t	mptrsize(void *ptr) {
 
 	if (!!ptr) {
 		pthread_mutex_trylock(&__mmutex);
-		__mptrsize_out = __mblk_get_size((ptrdiff_t)ptr - __mblkt_size);
+		__mptrsize_out = __mblk_get_size(
+			(ptrdiff_t)ptr - (ptrdiff_t)__mblkt_size);
 		pthread_mutex_unlock(&__mmutex);
 	}
 	return __mptrsize_out;

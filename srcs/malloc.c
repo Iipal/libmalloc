@@ -54,9 +54,9 @@ static inline void	__frag_free_space(const ptrdiff_t __bestptr,
 		const size_t	__fragmentation_size
 			= __bestsize - __mblkt_bd_size - __require_size;
 
-		__mblk_set_size(__bestptr + __mblk_iter(__require_size),
+		__mblk_set_size(__bestptr + __mblk_piter(__require_size),
 			__fragmentation_size, __fragmentation_size);
-		__mblk_set_free(__bestptr + __mblk_iter(__require_size),
+		__mblk_set_free(__bestptr + __mblk_piter(__require_size),
 			__fragmentation_size, __mblk_free);
 	} else {
 		__mblk_set_size(__bestptr, __bestsize, __bestsize);
@@ -91,9 +91,7 @@ static inline void	*_find_best_free_block(const size_t __require_size) {
 }
 
 // shared from stdlib.h
-extern int atexit (void (*__func) (void))
-	__attribute__ ((__nothrow__ __LEAF))
-	__attribute__ ((__nonnull__ (1)));
+extern int atexit (void (*__func) (void)) __THROW __nonnull ((1));
 
 static inline bool	_malloc_init(void) {
 	if (((void*)-1) == (__mstart = sbrk(0))) {

@@ -14,7 +14,7 @@ void	*realloc(void *ptr, size_t size) {
 		return NULL;
 	}
 
-	const size_t	__ptrsize = __mblk_get_size((ptrdiff_t)ptr - __mblkt_size);
+	const size_t	__ptrsize = __mblk_get_size((ptrdiff_t)ptr - __mblkt_psize);
 
 	if (__ptrsize >= __mblk_align_size(size)) {
 		return ptr;

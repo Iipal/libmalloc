@@ -14,7 +14,7 @@ void	free(void *ptr) {
 		return ;
 	}
 
-	void	*__ptr = (void*)((ptrdiff_t)ptr - __mblkt_size);
+	void	*__ptr = (void*)((ptrdiff_t)ptr - (ptrdiff_t)__mblkt_size);
 
 	pthread_mutex_lock(&__mmutex);
 	__mblk_set_free(__ptr, __mblk_get_size(__ptr), __mblk_free);
@@ -30,8 +30,8 @@ static inline void	*_fragmentation_left(void *restrict src_ptr) {
 	}
 
 	ptrdiff_t	__baseptr = (ptrdiff_t)src_ptr;
-	ptrdiff_t	__iptr = __baseptr
-		- __mblk_iter(__mblk_get_size(__baseptr - __mblkt_size));
+	ptrdiff_t	__iptr = __baseptr - __mblk_piter(
+		__mblk_get_size(__baseptr - __mblkt_psize));
 
 	while (((uintptr_t)__iptr >= (uintptr_t)__mstart)
 	&& __mblk_get_free(__iptr)) {
@@ -42,21 +42,21 @@ static inline void	*_fragmentation_left(void *restrict src_ptr) {
 		__mblk_set_free(__iptr, __fragsize, __mblk_free);
 		__mblk_set_size(__iptr, __fragsize, __fragsize);
 		if (!__mblk_valid_start(__iptr, __mblkt_size)
-		|| !__mblk_valid_start(__iptr, __mblk_get_size(__iptr - __mblkt_size)))
+		|| !__mblk_valid_start(__iptr, __mblk_get_size(__iptr - __mblkt_psize)))
 			break ;
 		__baseptr = __iptr;
-		__iptr -= __mblk_iter(__mblk_get_size(__iptr - __mblkt_size));
+		__iptr -= __mblk_piter(__mblk_get_size(__iptr - __mblkt_psize));
 	}
 	return (void*)__baseptr;
 }
 
 static inline void	_fragmentation_right(void *restrict src_ptr) {
-	if (!__mblk_valid_end(src_ptr, __mblkt_size)) {
+	if (!__mblk_valid_end(src_ptr, __mblkt_psize)) {
 		return ;
 	}
 
 	ptrdiff_t	__baseptr = (ptrdiff_t)src_ptr;
-	ptrdiff_t	__iptr = __baseptr + __mblk_iter(__mblk_get_size(__baseptr));
+	ptrdiff_t	__iptr = __baseptr + __mblk_piter(__mblk_get_size(__baseptr));
 
 	while (((uintptr_t)__iptr < (uintptr_t)__mend) && __mblk_get_free(__iptr)) {
 		const size_t	__fragsize = __mblk_get_size(__iptr)
@@ -70,10 +70,9 @@ static inline void	_fragmentation_right(void *restrict src_ptr) {
 	}
 }
 
-// using with atexit()
 void	__free_all(void) {
-	if (-1 == brk((void*)__mstart)) {
-		err(1, "brk:");
-	}
+	pthread_mutex_trylock(&__mmutex);
+	brk(__mstart);
 	__mend = __mstart;
+	pthread_mutex_unlock(&__mmutex);
 }
