@@ -1,8 +1,4 @@
 make_optional:
- ifneq (,$(filter $(MAKECMDGOALS),pedantic pedantic_all))
-	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_PEDANTIC))
-	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_PEDANTIC)
- endif
  ifneq (,$(filter $(MAKECMDGOALS),debug debug_all))
 	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_DEBUG))
 	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_DEBUG)
@@ -11,17 +7,25 @@ make_optional:
 	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_SANITIZE))
 	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_SANITIZE)
  endif
+ ifneq (,$(filter $(MAKECMDGOALS),debug_assembly debug_assembly_all))
+	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_DEBUG_ASSEMBLY))
+	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_DEBUG_ASSEMBLY)
+	@$(eval ASMS:=$(OBJS:.o=.S))
+	@$(eval OBJS:=)
+ endif
  ifneq (,$(filter $(MAKECMDGOALS),assembly assembly_all))
 	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_ASSEMBLY))
 	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_ASSEMBLY)
 	@$(eval ASMS:=$(OBJS:.o=.S))
 	@$(eval OBJS:=)
  endif
- ifneq (,$(filter $(MAKECMDGOALS),debug_assembly debug_assembly_all))
-	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_DEBUG_ASSEMBLY))
-	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_DEBUG_ASSEMBLY)
-	@$(eval ASMS:=$(OBJS:.o=.S))
-	@$(eval OBJS:=)
+ ifneq (,$(filter $(MAKECMDGOALS),pedantic pedantic_all))
+	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_PEDANTIC))
+	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_PEDANTIC)
+ endif
+ ifneq (,$(filter $(MAKECMDGOALS),everything everything_all))
+	@$(eval CFLAGS_OPTIONAL:=$(CFLAGS_EVERYTHING))
+	@$(eval DEFINES:=$(shell echo $(basename $(NAME)) | tr a-z A-Z)_EVERYTHING)
  endif
 
 debug_all: pre
@@ -38,3 +42,6 @@ debug_assembly: multi
 
 pedantic_all: pre
 pedantic: multi
+
+everything_all: pre
+everything: multi

@@ -41,22 +41,18 @@ endif
 CFLAGS_DEBUG          := -g3
 CFLAGS_SHARED         := -shared
 CFLAGS_PEDANTIC       := -Wpedantic
+CFLAGS_EVERYTHING     := -Weverything -Wno-reserved-id-macro -Wno-format-nonliteral
 CFLAGS_SANITIZE       := $(CFLAGS_DEBUG) -fsanitize=address
-CFLAGS_OPTIMIZE       := -march=native -mtune=native -Ofast -pipe -flto -fpic
+CFLAGS_OPTIMIZE       := -march=native -mtune=native -Ofast -pipe -flto
 CFLAGS_ASSEMBLY       := -march=native -mtune=native -Ofast -pipe -S -masm=intel
 CFLAGS_DEBUG_ASSEMBLY := $(CFLAGS_DEBUG) -S -masm=intel
 
 ifeq (gcc,$(CC))
-CFLAGS          += -Wno-unused-result
 CFLAGS_PEDANTIC += -fmax-errors=15
 endif
 
 ifeq (.so,$(suffix $(NAME)))
-CFLAGS_DEBUG          += -fpic
-CFLAGS_PEDANTIC       += -fpic
-CFLAGS_SANITIZE       += -fpic
-CFLAGS_ASSEMBLY       += -fpic
-CFLAGS_DEBUG_ASSEMBLY += -fpic
+CFLAGS += -fpic
 endif
 
 CFLAGS_OPTIONAL := $(CFLAGS_OPTIMIZE)
