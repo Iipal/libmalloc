@@ -124,6 +124,4 @@ extern size_t	mptrsize(void *ptr)
 
 # endif
 
-# include "libm_cdefs_delete.h"
-
 #endif
